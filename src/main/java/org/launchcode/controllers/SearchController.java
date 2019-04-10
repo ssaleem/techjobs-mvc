@@ -15,11 +15,13 @@ import java.util.HashMap;
  */
 @Controller
 @RequestMapping("search")
-public class SearchController {
+public class SearchController extends TechJobsController{
+
+    private static String searchTypeSelection = "all";
 
     @RequestMapping(value = "")
     public String search(Model model) {
-        model.addAttribute("columns", ListController.columnChoices);
+        model.addAttribute("searchTypeSelection", searchTypeSelection);
         return "search";
     }
 
@@ -29,22 +31,26 @@ public class SearchController {
             @RequestParam String searchType,
             @RequestParam(required = false) String searchTerm){
 
-//        TODO: add error for empty searchTerm
-
         ArrayList<HashMap<String, String>> results;
 
-
-        if(searchType.equals("all")){
-            results = JobData.findByValue(searchTerm);
+        if(searchTerm.equals("")){
+            model.addAttribute("emptySearchTerm", true);
         }
         else {
-            results = JobData.findByColumnAndValue(searchType, searchTerm);
+            if(searchType.equals("all")){
+                results = JobData.findByValue(searchTerm);
+            }
+            else {
+                results = JobData.findByColumnAndValue(searchType, searchTerm);
+            }
+
+
+            model.addAttribute("jobCount", results.size());
+            model.addAttribute("jobs", results);
         }
 
-
-        model.addAttribute("jobCount", results.size());
-        model.addAttribute("columns", ListController.columnChoices);
-        model.addAttribute("jobs", results);
+        searchTypeSelection = searchType;
+        model.addAttribute("searchTypeSelection", searchTypeSelection);
         return "search";
     }
 
